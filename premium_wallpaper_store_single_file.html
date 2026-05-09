@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wallverse — Premium Wallpapers</title>
+  <style>
+    /* =========================================================
+       WALLVERSE — SINGLE FILE WALLPAPER WEBSITE
+       Edit brand name, UPI ID, admin password and products below.
+       NOTE: Frontend-only admin is for demo/simple use. For real business,
+       use a backend/database and a payment gateway like Razorpay/Cashfree.
+    ========================================================= */
+
+    :root {
+      --bg: #080913;
+      --bg-soft: #111322;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-strong: rgba(255, 255, 255, 0.13);
+      --text: #f8f7ff;
+      --muted: #a7a8bd;
+      --brand: #8b5cf6;
+      --brand-2: #22d3ee;
+      --gold: #f7c948;
+      --danger: #ff5470;
+      --success: #37d67a;
+      --border: rgba(255, 255, 255, 0.13);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(139, 92, 246, 0.38), transparent 30%),
+        radial-gradient(circle at 85% 20%, rgba(34, 211, 238, 0.22), transparent 28%),
+        radial-gradient(circle at 50% 100%, rgba(247, 201, 72, 0.12), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; }
+    img { max-width: 100%; display: block; }
+
+    .container { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(22px);
+      background: rgba(8, 9, 19, 0.76);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      font-size: 1.4rem;
+    }
+    .logo-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.45);
+    }
+    .nav-links { display: flex; gap: 18px; align-items: center; color: var(--muted); font-weight: 700; }
+    .nav-links a:hover { color: var(--text); }
+
+    .btn {
+      border: 0;
+      cursor: pointer;
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 800;
+      background: var(--card);
+      border: 1px solid var(--border);
+      transition: 0.25s ease;
+    }
+    .btn:hover { transform: translateY(-2px); background: var(--card-strong); }
+    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); border: 0; box-shadow: 0 12px 34px rgba(34, 211, 238, 0.22); }
+    .btn-danger { background: rgba(255, 84, 112, 0.14); border-color: rgba(255, 84, 112, 0.35); color: #ffd5dc; }
+    .btn-small { padding: 9px 12px; font-size: 0.85rem; }
+
+    .hero { padding: 82px 0 58px; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; align-items: center; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      color: #dddcff;
+      font-weight: 800;
+      margin-bottom: 22px;
+    }
+    .pulse { width: 9px; height: 9px; background: var(--success); border-radius: 50%; box-shadow: 0 0 0 8px rgba(55, 214, 122, 0.12); }
+    h1 { font-size: clamp(2.6rem, 6vw, 5.7rem); line-height: 0.94; letter-spacing: -0.08em; margin-bottom: 24px; }
+    .gradient-text { background: linear-gradient(135deg, #fff, #d7ccff 45%, #7ee7ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero p { color: var(--muted); font-size: 1.12rem; line-height: 1.8; max-width: 620px; }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 36px; }
+    .stat { padding: 18px; border: 1px solid var(--border); background: rgba(255,255,255,0.06); border-radius: 20px; }
+    .stat b { font-size: 1.4rem; display: block; }
+    .stat span { color: var(--muted); font-size: 0.88rem; }
+
+    .showcase {
+      position: relative;
+      min-height: 520px;
+      border-radius: 34px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+      box-shadow: var(--shadow);
+    }
+    .showcase::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(8,9,19,0.74)), url('https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=1100&q=80');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.9;
+    }
+    .floating-card {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      padding: 22px;
+      border-radius: 24px;
+      background: rgba(8, 9, 19, 0.72);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+    }
+    .floating-card h3 { font-size: 1.25rem; margin-bottom: 8px; }
+    .floating-card p { font-size: 0.95rem; line-height: 1.6; }
+
+    section { padding: 56px 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+    .section-head h2 { font-size: clamp(1.8rem, 3vw, 3rem); letter-spacing: -0.06em; }
+    .section-head p { color: var(--muted); margin-top: 8px; line-height: 1.6; }
+
+    .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .category-card {
+      min-height: 170px;
+      padding: 20px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(139,92,246,0.24), rgba(34,211,238,0.08));
+      border: 1px solid var(--border);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: 0.25s ease;
+    }
+    .category-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.28); }
+    .category-card::after { content: ""; position: absolute; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.08); right: -42px; bottom: -42px; }
+    .category-card h3 { position: relative; z-index: 1; font-size: 1.25rem; margin-top: 48px; }
+    .category-card span { position: relative; z-index: 1; color: var(--muted); font-weight: 700; }
+    .category-icon { font-size: 2rem; position: relative; z-index: 1; }
+
+    .toolbar { display: grid; grid-template-columns: 1fr 220px; gap: 14px; margin-bottom: 22px; }
+    .input, .select, textarea {
+      width: 100%;
+      color: var(--text);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 13px 14px;
+      outline: 0;
+    }
+    .input:focus, .select:focus, textarea:focus { border-color: rgba(34,211,238,0.55); box-shadow: 0 0 0 4px rgba(34,211,238,0.08); }
+    .select option { color: #111; }
+
+    .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .product-card {
+      border-radius: 26px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.16);
+    }
+    .product-img { height: 260px; background-size: cover; background-position: center; position: relative; }
+    .price-pill { position: absolute; top: 14px; right: 14px; padding: 8px 12px; border-radius: 999px; background: rgba(8,9,19,0.74); backdrop-filter: blur(12px); font-weight: 900; }
+    .product-body { padding: 18px; }
+    .product-body h3 { font-size: 1.15rem; margin-bottom: 8px; }
+    .product-body p { color: var(--muted); line-height: 1.55; font-size: 0.92rem; min-height: 44px; }
+    .product-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 10px; }
+    .tag { color: #d9d5ff; background: rgba(139,92,246,0.18); border: 1px solid rgba(139,92,246,0.3); padding: 7px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 800; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0,0,0,0.65);
+      z-index: 80;
+    }
+    .modal.active { display: grid; }
+    .modal-card {
+      width: min(620px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      border-radius: 28px;
+      background: #111322;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .close { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); color: var(--text); background: rgba(255,255,255,0.08); cursor: pointer; }
+    .form-grid { display: grid; gap: 12px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hint { color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+    .admin-box { padding: 22px; border-radius: 26px; background: rgba(255,255,255,0.07); border: 1px solid var(--border); margin-bottom: 18px; }
+    .admin-list { display: grid; gap: 10px; }
+    .admin-item { display: grid; grid-template-columns: 70px 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 18px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); }
+    .admin-thumb { width: 70px; height: 70px; background-size: cover; background-position: center; border-radius: 14px; }
+
+    .payment-options { display: grid; gap: 12px; margin: 15px 0; }
+    .pay-option { padding: 14px; border-radius: 18px; border: 1px solid var(--border); background: rgba(255,255,255,0.06); }
+    .pay-option strong { display: block; margin-bottom: 4px; }
+
+    .footer { padding: 34px 0; color: var(--muted); border-top: 1px solid var(--border); text-align: center; }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .category-grid { grid-template-columns: repeat(2, 1fr); }
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+      .toolbar { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 560px) {
+      .hero { padding-top: 48px; }
+      .stats, .category-grid, .product-grid, .two-col { grid-template-columns: 1fr; }
+      .showcase { min-height: 420px; }
+      .admin-item { grid-template-columns: 60px 1fr; }
+      .admin-actions { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="logo" href="#home" aria-label="Wallverse home">
+        <span class="logo-mark">✦</span>
+        <span>Wallverse</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#categories">Categories</a>
+        <a href="#products">Wallpapers</a>
+        <a href="#admin">Admin</a>
+      </nav>
+      <button class="btn btn-primary" onclick="openAdminLogin()">Admin Login</button>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="badge"><span class="pulse"></span> Premium 4K wallpapers store</div>
+          <h1><span class="gradient-text">Sell stunning wallpapers</span> with a luxury storefront.</h1>
+          <p>Anime, Gods, Marvel, cars, aesthetic edits and digital collections — all in a fast, mobile-ready single-file website with product management and payment flow.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#products">Explore Wallpapers</a>
+            <a class="btn" href="#categories">Browse Categories</a>
+          </div>
+          <div class="stats">
+            <div class="stat"><b>4K</b><span>Premium quality</span></div>
+            <div class="stat"><b>UPI</b><span>India-ready payment</span></div>
+            <div class="stat"><b>Admin</b><span>Easy product control</span></div>
+          </div>
+        </div>
+        <div class="showcase" aria-label="Featured wallpaper showcase">
+          <div class="floating-card">
+            <h3>Featured Drop: Neon Anime Collection</h3>
+            <p>Launch limited digital wallpapers with instant purchase flow and a clean premium shopping experience.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="categories">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Shop by category</h2>
+            <p>Tap a category to filter products instantly.</p>
+          </div>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+      </div>
+    </section>
+
+    <section id="products">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Premium wallpapers</h2>
+            <p>Search, filter, and buy your favorite digital wallpapers.</p>
+          </div>
+          <button class="btn" onclick="resetFilters()">Show All</button>
+        </div>
+        <div class="toolbar">
+          <input class="input" id="searchInput" placeholder="Search wallpapers..." oninput="renderProducts()" />
+          <select class="select" id="categoryFilter" onchange="renderProducts()"></select>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+    </section>
+
+    <section id="admin">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Admin dashboard</h2>
+            <p>Login to upload, edit and delete products/categories.</p>
+          </div>
+        </div>
+
+        <div class="admin-box" id="adminLocked">
+          <h3>Admin access locked</h3>
+          <p class="hint" style="margin: 10px 0 16px;">Click login and enter your password. Change the password inside JavaScript before publishing.</p>
+          <button class="btn btn-primary" onclick="openAdminLogin()">Open Admin Login</button>
+        </div>
+
+        <div class="admin-panel" id="adminPanel">
+          <div class="admin-box">
+            <div class="section-head" style="margin-bottom: 14px;">
+              <div>
+                <h3>Add / Edit Product</h3>
+                <p class="hint">Use image URL or upload image file. Browser storage keeps your products on this device.</p>
+              </div>
+              <button class="btn btn-danger" onclick="logoutAdmin()">Logout</button>
+            </div>
+            <div class="form-grid">
+              <input type="hidden" id="editProductId" />
+              <div class="two-col">
+                <input class="input" id="productName" placeholder="Product name" />
+                <input class="input" id="productPrice" type="number" placeholder="Price ₹" />
+              </div>
+              <select class="select" id="productCategory"></select>
+              <input class="input" id="productImage" placeholder="Image URL" />
+              <input class="input" id="productFile" type="file" accept="image/*" onchange="handleImageUpload(event)" />
+              <textarea id="productDesc" rows="3" placeholder="Product description"></textarea>
+              <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            </div>
+          </div>
+
+          <div class="admin-box">
+            <h3>Manage Categories</h3>
+            <div class="form-grid" style="margin-top: 14px;">
+              <div class="two-col">
+                <input class="input" id="newCategory" placeholder="New category name" />
+                <input class="input" id="newCategoryIcon" placeholder="Icon emoji e.g. ⚡" />
+              </div>
+              <button class="btn" onclick="addCategory()">Add Category</button>
+            </div>
+            <div class="admin-list" id="categoryAdminList" style="margin-top: 16px;"></div>
+          </div>
+
+          <div class="admin-box">
+            <h3>Manage Products</h3>
+            <div class="admin-list" id="adminProductList" style="margin-top: 16px;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">© <span id="year"></span> Wallverse. Premium digital wallpaper store.</div>
+  </footer>
+
+  <!-- Login Modal -->
+  <div class="modal" id="loginModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Admin Login</h2>
+        <button class="close" onclick="closeModal('loginModal')">×</button>
+      </div>
+      <div class="form-grid">
+        <input class="input" id="adminPassword" type="password" placeholder="Enter admin password" />
+        <button class="btn btn-primary" onclick="loginAdmin()">Login</button>
+        <p class="hint">Demo password: <b>admin123</b>. Change it in the ADMIN_PASSWORD variable before use.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal" id="paymentModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Checkout</h2>
+        <button class="close" onclick="closeModal('paymentModal')">×</button>
+      </div>
+      <div id="paymentContent"></div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       EASY CUSTOMIZATION SETTINGS
+    ========================================================= */
+    const ADMIN_PASSWORD = "admin123"; // Change this before publishing
+    const YOUR_UPI_ID = "9421883196@SLC"; // Your connected UPI ID
+    const STORE_NAME = "Wallverse";
+
+    const DEFAULT_CATEGORIES = [
+      { name: "Anime Wallpapers", icon: "🔥" },
+      { name: "Gods Wallpapers", icon: "🕉️" },
+      { name: "Marvel", icon: "⚡" },
+      { name: "Cars", icon: "🏎️" },
+      { name: "Aesthetic", icon: "🌙" },
+      { name: "Gaming", icon: "🎮" },
+      { name: "Nature", icon: "🌿" },
+      { name: "Dark Luxury", icon: "♛" }
+    ];
+
+    const DEFAULT_PRODUCTS = [
+      {
+        id: crypto.randomUUID(),
+        name: "Neon Samurai 4K",
+        category: "Anime Wallpapers",
+        price: 49,
+        desc: "High-detail neon anime wallpaper for phone and desktop screens.",
+        image: "https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=900&q=80"
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Divine Shiva Glow",
+        category: "Gods Wallpapers",
+        price: 59,
+        desc: "Premium devotional wallpaper with cinematic glow and luxury finish.",
+        image: "https://images.unsplash.com/photo-1624610809501-259b56f5f324?auto=format&fit=crop&w=900&q=80"
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Hero City Drop",
+        category: "Marvel",
+        price: 69,
+        desc: "Bold superhero-style city wallpaper inspired by comic energy.",
+        image: "https://images.unsplash.com/photo-1635805737707-575885ab0820?auto=format&fit=crop&w=900&q=80"
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Midnight Hypercar",
+        category: "Cars",
+        price: 79,
+        desc: "Dark luxury car wallpaper designed for premium lock screens.",
+        image: "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=900&q=80"
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Moon Room Aesthetic",
+        category: "Aesthetic",
+        price: 39,
+        desc: "Soft dreamy wallpaper for clean Instagram-style phone setups.",
+        image: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=900&q=80"
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Cyber Gamer Core",
+        category: "Gaming",
+        price: 49,
+        desc: "Cyberpunk gaming wallpaper with strong contrast and depth.",
+        image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80"
+      }
+    ];
+
+    let categories = JSON.parse(localStorage.getItem("wallverse_categories")) || DEFAULT_CATEGORIES;
+    let products = JSON.parse(localStorage.getItem("wallverse_products")) || DEFAULT_PRODUCTS;
+    let isAdmin = sessionStorage.getItem("wallverse_admin") === "true";
+    let selectedProduct = null;
+
+    function saveData() {
+      try {
+        localStorage.setItem("wallverse_categories", JSON.stringify(categories));
+        localStorage.setItem("wallverse_products", JSON.stringify(products));
+        return true;
+      } catch (error) {
+        alert("Storage is full. Please upload a smaller image or use an image URL instead of a very large file.");
+        return false;
+      }
+    }
+
+    function renderAll() {
+      document.getElementById("year").textContent = new Date().getFullYear();
+      renderCategories();
+      renderCategorySelects();
+      renderProducts();
+      renderAdmin();
+    }
+
+    function renderCategories() {
+      const grid = document.getElementById("categoryGrid");
+      grid.innerHTML = categories.map(cat => {
+        const count = products.filter(p => p.category === cat.name).length;
+        return `
+          <div class="category-card" onclick="filterByCategory('${escapeText(cat.name)}')">
+            <div class="category-icon">${cat.icon || "✦"}</div>
+            <h3>${cat.name}</h3>
+            <span>${count} products</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderCategorySelects() {
+      const options = [`<option value="All">All Categories</option>`].concat(categories.map(c => `<option value="${escapeText(c.name)}">${c.name}</option>`)).join("");
+      document.getElementById("categoryFilter").innerHTML = options;
+      document.getElementById("productCategory").innerHTML = categories.map(c => `<option value="${escapeText(c.name)}">${c.name}</option>`).join("");
+    }
+
+    function renderProducts() {
+      const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
+      const category = document.getElementById("categoryFilter")?.value || "All";
+      const grid = document.getElementById("productGrid");
+
+      const filtered = products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search);
+        const matchesCategory = category === "All" || p.category === category;
+        return matchesSearch && matchesCategory;
+      });
+
+      grid.innerHTML = filtered.length ? filtered.map(p => `
+        <article class="product-card">
+          <div class="product-img" style="background-image:url('${p.image}')">
+            <div class="price-pill">₹${p.price}</div>
+          </div>
+          <div class="product-body">
+            <h3>${p.name}</h3>
+            <p>${p.desc}</p>
+            <div class="product-meta">
+              <span class="tag">${p.category}</span>
+              <button class="btn btn-primary btn-small" onclick="openPayment('${p.id}')">Buy Now</button>
+            </div>
+          </div>
+        </article>
+      `).join("") : `<p class="hint">No products found. Try another category or search.</p>`;
+    }
+
+    function renderAdmin() {
+      document.getElementById("adminLocked").style.display = isAdmin ? "none" : "block";
+      document.getElementById("adminPanel").classList.toggle("active", isAdmin);
+      if (!isAdmin) return;
+
+      document.getElementById("adminProductList").innerHTML = products.map(p => `
+        <div class="admin-item">
+          <div class="admin-thumb" style="background-image:url('${p.image}')"></div>
+          <div>
+            <b>${p.name}</b><br />
+            <span class="hint">${p.category} • ₹${p.price}</span>
+          </div>
+          <div class="admin-actions">
+            <button class="btn btn-small" onclick="editProduct('${p.id}')">Edit</button>
+            <button class="btn btn-danger btn-small" onclick="deleteProduct('${p.id}')">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      document.getElementById("categoryAdminList").innerHTML = categories.map(c => `
+        <div class="admin-item" style="grid-template-columns: 1fr auto;">
+          <div><b>${c.icon || "✦"} ${c.name}</b></div>
+          <button class="btn btn-danger btn-small" onclick="deleteCategory('${escapeText(c.name)}')">Delete</button>
+        </div>
+      `).join("");
+    }
+
+    function openAdminLogin() { document.getElementById("loginModal").classList.add("active"); }
+    function closeModal(id) { document.getElementById(id).classList.remove("active"); }
+
+    function loginAdmin() {
+      const password = document.getElementById("adminPassword").value;
+      if (password === ADMIN_PASSWORD) {
+        isAdmin = true;
+        sessionStorage.setItem("wallverse_admin", "true");
+        closeModal("loginModal");
+        renderAdmin();
+        location.hash = "admin";
+      } else {
+        alert("Wrong password");
+      }
+    }
+
+    function logoutAdmin() {
+      isAdmin = false;
+      sessionStorage.removeItem("wallverse_admin");
+      renderAdmin();
+    }
+
+    function saveProduct() {
+      const id = document.getElementById("editProductId").value;
+      const product = {
+        id: id || crypto.randomUUID(),
+        name: document.getElementById("productName").value.trim(),
+        price: Number(document.getElementById("productPrice").value),
+        category: document.getElementById("productCategory").value,
+        image: document.getElementById("productImage").value.trim(),
+        desc: document.getElementById("productDesc").value.trim()
+      };
+
+      if (!product.name || !product.price || !product.image || !product.desc) {
+        alert("Please fill all product details. If you uploaded an image, wait 2 seconds and then click Save Product again.");
+        return;
+      }
+
+      const oldProducts = [...products];
+
+      if (id) {
+        products = products.map(p => p.id === id ? product : p);
+      } else {
+        products.unshift(product);
+      }
+
+      const saved = saveData();
+      if (!saved) {
+        products = oldProducts;
+        return;
+      }
+
+      clearProductForm();
+      renderAll();
+      alert("Product saved successfully. Scroll to Wallpapers section to see it.");
+    }
+
+    function editProduct(id) {
+      const p = products.find(item => item.id === id);
+      if (!p) return;
+      document.getElementById("editProductId").value = p.id;
+      document.getElementById("productName").value = p.name;
+      document.getElementById("productPrice").value = p.price;
+      document.getElementById("productCategory").value = p.category;
+      document.getElementById("productImage").value = p.image;
+      document.getElementById("productDesc").value = p.desc;
+      location.hash = "admin";
+    }
+
+    function deleteProduct(id) {
+      if (!confirm("Delete this product?")) return;
+      products = products.filter(p => p.id !== id);
+      saveData();
+      renderAll();
+    }
+
+    function clearProductForm() {
+      document.getElementById("editProductId").value = "";
+      document.getElementById("productName").value = "";
+      document.getElementById("productPrice").value = "";
+      document.getElementById("productImage").value = "";
+      document.getElementById("productFile").value = "";
+      document.getElementById("productDesc").value = "";
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload only image files.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxSize = 900; // Keeps file small so localStorage does not fail
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height && width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedImage = canvas.toDataURL("image/jpeg", 0.72);
+          document.getElementById("productImage").value = compressedImage;
+          alert("Image uploaded. Now click Save Product.");
+        };
+        img.onerror = () => alert("Image could not be loaded. Try another image or use an image URL.");
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addCategory() {
+      const name = document.getElementById("newCategory").value.trim();
+      const icon = document.getElementById("newCategoryIcon").value.trim() || "✦";
+      if (!name) return alert("Enter category name.");
+      if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) return alert("Category already exists.");
+      categories.push({ name, icon });
+      saveData();
+      document.getElementById("newCategory").value = "";
+      document.getElementById("newCategoryIcon").value = "";
+      renderAll();
+    }
+
+    function deleteCategory(name) {
+      const used = products.some(p => p.category === name);
+      if (used) return alert("This category has products. Delete or move products first.");
+      if (!confirm("Delete this category?")) return;
+      categories = categories.filter(c => c.name !== name);
+      saveData();
+      renderAll();
+    }
+
+    function filterByCategory(name) {
+      document.getElementById("categoryFilter").value = name;
+      location.hash = "products";
+      renderProducts();
+    }
+
+    function resetFilters() {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("categoryFilter").value = "All";
+      renderProducts();
+    }
+
+    function openPayment(id) {
+      selectedProduct = products.find(p => p.id === id);
+      if (!selectedProduct) return;
+
+      const upiLink = `upi://pay?pa=${encodeURIComponent(YOUR_UPI_ID)}&pn=${encodeURIComponent(STORE_NAME)}&am=${selectedProduct.price}&cu=INR&tn=${encodeURIComponent(selectedProduct.name)}`;
+      const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(upiLink)}`;
+
+      document.getElementById("paymentContent").innerHTML = `
+        <h3>${selectedProduct.name}</h3>
+        <p class="hint" style="margin: 8px 0 16px;">Amount payable: <b>₹${selectedProduct.price}</b></p>
+
+        <div class="payment-options">
+          <div class="pay-option">
+            <strong>Pay by UPI</strong>
+            <p class="hint">UPI ID: <b>${YOUR_UPI_ID}</b></p>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+              <button class="btn btn-primary" onclick="openUPIApp('${upiLink}')">Open UPI App</button>
+              <button class="btn" onclick="copyUPI()">Copy UPI ID</button>
+            </div>
+
+            <div style="margin-top:18px;text-align:center;">
+              <img src="${qrImage}" alt="UPI QR Code" style="width:260px;height:260px;margin:0 auto;border-radius:18px;background:#fff;padding:10px;" />
+              <p class="hint" style="margin-top:10px;">Best method: scan this QR from another phone using PhonePe / Google Pay / Paytm / BHIM.</p>
+            </div>
+          </div>
+
+          <div class="pay-option">
+            <strong>Manual Payment</strong>
+            <p class="hint">Open your UPI app manually → Pay to UPI ID → enter <b>${YOUR_UPI_ID}</b> → amount ₹${selectedProduct.price}.</p>
+          </div>
+
+          <div class="pay-option">
+            <strong>Card Payment</strong>
+            <p class="hint">Card payment cannot work securely in a single HTML file. You need Razorpay/Cashfree/PhonePe Payment Gateway for real cards.</p>
+          </div>
+        </div>
+
+        <p class="hint"><b>Note:</b> UPI app opening will not work from desktop, Live Preview, CodePen, or some in-app browsers. Upload the file to hosting and open it on Android Chrome for best result.</p>
+      `;
+      document.getElementById("paymentModal").classList.add("active");
+    }
+
+    function openUPIApp(upiLink) {
+      window.location.href = upiLink;
+      setTimeout(() => {
+        alert("If UPI app did not open, scan the QR code or copy the UPI ID manually. Some browsers block direct UPI links.");
+      }, 1200);
+    }
+
+    function copyUPI() {
+      navigator.clipboard.writeText(YOUR_UPI_ID).then(() => {
+        alert("UPI ID copied: " + YOUR_UPI_ID);
+      }).catch(() => {
+        prompt("Copy this UPI ID:", YOUR_UPI_ID);
+      });
+    }
+
+    function escapeText(text) {
+      return String(text).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
